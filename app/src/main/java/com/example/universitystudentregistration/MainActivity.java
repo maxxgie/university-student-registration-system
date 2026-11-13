@@ -3,7 +3,6 @@ package com.example.universitystudentregistration;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -369,9 +368,7 @@ public class MainActivity extends AppCompatActivity {
         firebaseHelper.saveStudent(student, new FirebaseHelper.OnFirebaseOperationListener() {
             @Override
             public void onSuccess() {
-                Log.d("MainActivity", "onSuccess callback received");
                 runOnUiThread(() -> {
-                    Log.d("MainActivity", "Navigating to dashboard");
                     String statusMsg = NetworkUtil.isConnected(MainActivity.this) ?
                             "Registration successful! Welcome to your dashboard." :
                             "Registration saved offline. Will sync when online. Welcome to your dashboard.";
@@ -386,7 +383,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(String errorMessage) {
-                Log.e("MainActivity", "onFailure callback: " + errorMessage);
                 runOnUiThread(() ->
                         Toast.makeText(MainActivity.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show()
                 );
