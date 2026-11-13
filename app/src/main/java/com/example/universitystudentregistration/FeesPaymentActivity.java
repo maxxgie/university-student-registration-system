@@ -15,8 +15,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.universitystudentregistration.daraja.DarajaClient;
-import com.example.universitystudentregistration.daraja.STKPushResponse;
 import com.example.universitystudentregistration.model.Payment;
 import com.example.universitystudentregistration.model.Student;
 import com.example.universitystudentregistration.util.FirebaseHelper;
@@ -30,9 +28,7 @@ public class FeesPaymentActivity extends AppCompatActivity {
     private TextView tvPaymentStatus, tvTransactionCode;
     private SharedPrefManager sharedPrefManager;
     private FirebaseHelper firebaseHelper;
-    private DarajaClient darajaClient;
     private boolean paymentCompleted = false;
-    private String currentCheckoutRequestId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +59,6 @@ public class FeesPaymentActivity extends AppCompatActivity {
         // Initialize utilities
         sharedPrefManager = new SharedPrefManager(this);
         firebaseHelper = new FirebaseHelper(this);
-        darajaClient = new DarajaClient(this);
 
         // Connect UI elements
         etPhoneNumber = findViewById(R.id.etPhoneNumber);
@@ -83,15 +78,14 @@ public class FeesPaymentActivity extends AppCompatActivity {
             etStudentIdNoFees.setEnabled(false);
         }
 
-        // Check if Daraja is configured
-        if (!darajaClient.getConfigManager().isConfigured()) {
-            tvPaymentStatus.setText("⚠️ MPESA not configured. Add credentials to daraja_config.json");
-            tvPaymentStatus.setTextColor(getResources().getColor(android.R.color.holo_orange_dark));
-            btnMpesaPrompt.setEnabled(false);
-        }
+        // Placeholder: MPESA not implemented - show authorized message
+        tvPaymentStatus.setText("MPESA integration pending. Tap 'Authorized' to simulate payment.");
+        tvPaymentStatus.setTextColor(getResources().getColor(android.R.color.holo_blue_dark));
+        btnMpesaPrompt.setText("Authorized (Placeholder)");
+        btnMpesaPrompt.setBackgroundTintList(getResources().getColorStateList(android.R.color.holo_orange_dark));
 
-        // MPESA Prompt button click
-        btnMpesaPrompt.setOnClickListener(v -> validateAndInitiateMpesa());
+        // Authorized button click - simulate payment
+        btnMpesaPrompt.setOnClickListener(v -> simulateAuthorizedPayment());
 
         btnViewSummary.setOnClickListener(v -> {
             if (paymentCompleted) {
@@ -102,7 +96,7 @@ public class FeesPaymentActivity extends AppCompatActivity {
         });
     }
 
-    private void validateAndInitiateMpesa() {
+    private void simulateAuthorizedPayment() {
         String phoneNumber = etPhoneNumber.getText().toString().trim();
         String amountStr = etFeesAmount.getText().toString().trim();
         String studentIdNo = etStudentIdNoFees.getText().toString().trim();
@@ -160,126 +154,18 @@ public class FeesPaymentActivity extends AppCompatActivity {
             return;
         }
 
-        // All validation passed - initiate real MPESA STK Push
-        initiateMpesaPayment(phoneNumber, amount, studentIdNo);
-    }
-
-    private void initiateMpesaPayment(String phoneNumber, double amount, String studentIdNo) {
-        // Disable button during processing
+        // Simulate authorized payment
         btnMpesaPrompt.setEnabled(false);
-        btnMpesaPrompt.setText("Initiating MPESA...");
-        tvPaymentStatus.setText("Sending STK Push to " + phoneNumber + "...");
+        btnMpesaPrompt.setText("Processing...");
+        tvPaymentStatus.setText("Authorizing payment...");
         tvPaymentStatus.setTextColor(getResources().getColor(android.R.color.holo_blue_dark));
-        tvTransactionCode.setVisibility(View.GONE);
 
-        darajaClient.initiateSTKPush(phoneNumber, amount, studentIdNo, 
-                "University Registration Fees - " + studentIdNo, 
-                new DarajaClient.OnSTKPushListener() {
-                    @Override
-                    public void onSuccess(STKPushResponse response) {
-                        runOnUiThread(() -> {
-                            currentCheckoutRequestId = response.getCheckoutRequestID();
-                            tvPaymentStatus.setText("✓ STK Push sent! Please enter MPESA PIN on your phone.");
-                            tvPaymentStatus.setTextColor(getResources().getColor(android.R.color.holo_blue_dark));
-                            btnMpesaPrompt.setText("Waiting for payment...");
-                            
-                            // Start polling for payment status
-                            pollPaymentStatus(studentIdNo, phoneNumber, amount);
-                        });
-                    }
-
-                    @Override
-                    public void onFailure(String error) {
-                        runOnUiThread(() -> {
-                            tvPaymentStatus.setText("Failed to send STK Push: " + error);
-                            tvPaymentStatus.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-                            btnMpesaPrompt.setEnabled(true);
-                            btnMpesaPrompt.setText("Retry MPESA Payment");
-                            btnMpesaPrompt.setBackgroundTintList(getResources().getColorStateList(android.R.color.holo_blue_dark));
-                            Toast.makeText(FeesPaymentActivity.this,
-                                    "MPESA Error: " + error,
-                                    Toast.LENGTH_LONG).show();
-                        });
-                    }
-                });
-    }
-
-    private void pollPaymentStatus(String studentIdNo, String phoneNumber, double amount) {
-        // In a real implementation, you would either:
-        // 1. Use a callback URL that receives the payment confirmation
-        // 2. Poll the STK Push Query API
-        // 3. For now, we'll simulate waiting for user to complete payment
-        
-        // Show waiting message with instructions
-        tvPaymentStatus.setText("Waiting for payment completion...\n\nPlease check your phone for MPESA prompt and enter your PIN.");
-        
-        // Start a timeout check (in production, use callback or query API)
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-            if (!paymentCompleted) {
-                // Check if user might have completed payment
-                runOnUiThread(() -> {
-                    tvPaymentStatus.setText("Still waiting for payment...\n\nIf you completed payment, tap 'Check Status' below.");
-                    btnMpesaPrompt.setEnabled(true);
-                    btnMpesaPrompt.setText("Check Payment Status");
-                    btnMpesaPrompt.setBackgroundTintList(getResources().getColorStateList(android.R.color.holo_orange_dark));
-                    btnMpesaPrompt.setOnClickListener(v -> checkPaymentStatus(studentIdNo, phoneNumber, amount));
-                });
-            }
-        }, 60000); // 60 seconds timeout
-    }
-
-    private void checkPaymentStatus(String studentIdNo, String phoneNumber, double amount) {
-        btnMpesaPrompt.setEnabled(false);
-        btnMpesaPrompt.setText("Checking status...");
-        tvPaymentStatus.setText("Checking payment status with MPESA...");
-
-        // In production, call STK Push Query API here
-        // For now, we'll simulate the callback completion
-        // This would be replaced by actual callback handling from your backend
-        
-        // Simulate checking - in real app, this queries the Daraja API
-        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-            // In a real implementation, you would:
-            // 1. Call darajaClient.stkPushQuery() with the checkoutRequestID
-            // 2. Or receive callback from your backend server
-            // 3. For demo, we'll assume payment might have completed
-            
-            // For demo purposes, show manual confirmation dialog
-            runOnUiThread(() -> {
-                showPaymentConfirmationDialog(studentIdNo, phoneNumber, amount);
-            });
-        }, 3000);
-    }
-
-    private void showPaymentConfirmationDialog(String studentIdNo, String phoneNumber, double amount) {
-        new android.app.AlertDialog.Builder(this)
-                .setTitle("Payment Confirmation")
-                .setMessage("Did you complete the MPESA payment on your phone?\n\n" +
-                        "Amount: Kshs " + String.format("%,.0f", amount) + "\n" +
-                        "Phone: " + phoneNumber + "\n\n" +
-                        "If yes, tap 'Yes, Payment Done'.\n" +
-                        "If no, tap 'No, Retry'.")
-                .setPositiveButton("Yes, Payment Done", (dialog, which) -> {
-                    processSuccessfulPayment(studentIdNo, phoneNumber, amount);
-                })
-                .setNegativeButton("No, Retry", (dialog, which) -> {
-                    btnMpesaPrompt.setEnabled(true);
-                    btnMpesaPrompt.setText("Retry MPESA Payment");
-                    btnMpesaPrompt.setBackgroundTintList(getResources().getColorStateList(android.R.color.holo_blue_dark));
-                    btnMpesaPrompt.setOnClickListener(v -> validateAndInitiateMpesa());
-                    tvPaymentStatus.setText("Ready to retry payment.");
-                    tvPaymentStatus.setTextColor(getResources().getColor(android.R.color.holo_blue_dark));
-                })
-                .setCancelable(false)
-                .show();
+            processSuccessfulPayment(studentIdNo, phoneNumber, amount);
+        }, 1500); // Short delay for UX
     }
 
     private void processSuccessfulPayment(String studentIdNo, String phoneNumber, double amount) {
-        tvPaymentStatus.setText("Processing payment confirmation...");
-        tvPaymentStatus.setTextColor(getResources().getColor(android.R.color.holo_blue_dark));
-        btnMpesaPrompt.setEnabled(false);
-        btnMpesaPrompt.setText("Confirming...");
-
         // Generate transaction code
         String transactionCode = generateTransactionCode();
 
@@ -303,7 +189,7 @@ public class FeesPaymentActivity extends AppCompatActivity {
             @Override
             public void onSuccess() {
                 runOnUiThread(() -> {
-                    tvPaymentStatus.setText("✓ Payment successful! Registration confirmed.");
+                    tvPaymentStatus.setText("✓ Authorized! Payment successful. Registration confirmed.");
                     tvPaymentStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
                     tvTransactionCode.setText("Transaction Code: " + transactionCode);
                     tvTransactionCode.setVisibility(View.VISIBLE);
@@ -311,7 +197,7 @@ public class FeesPaymentActivity extends AppCompatActivity {
                     btnMpesaPrompt.setBackgroundTintList(getResources().getColorStateList(android.R.color.holo_green_dark));
                     paymentCompleted = true;
                     Toast.makeText(FeesPaymentActivity.this,
-                            "Payment successful! Registration confirmed.",
+                            "Authorized! Registration confirmed.",
                             Toast.LENGTH_LONG).show();
                 });
             }
@@ -319,7 +205,7 @@ public class FeesPaymentActivity extends AppCompatActivity {
             @Override
             public void onFailure(String errorMessage) {
                 runOnUiThread(() -> {
-                    tvPaymentStatus.setText("✓ Payment successful but offline. Will sync when online.");
+                    tvPaymentStatus.setText("✓ Authorized but offline. Will sync when online.");
                     tvPaymentStatus.setTextColor(getResources().getColor(android.R.color.holo_orange_dark));
                     tvTransactionCode.setText("Transaction Code: " + transactionCode);
                     tvTransactionCode.setVisibility(View.VISIBLE);
@@ -327,7 +213,7 @@ public class FeesPaymentActivity extends AppCompatActivity {
                     btnMpesaPrompt.setBackgroundTintList(getResources().getColorStateList(android.R.color.holo_orange_dark));
                     paymentCompleted = true;
                     Toast.makeText(FeesPaymentActivity.this,
-                            "Payment successful! Saved offline. Will sync when online.",
+                            "Authorized! Saved offline. Will sync when online.",
                             Toast.LENGTH_LONG).show();
                 });
             }

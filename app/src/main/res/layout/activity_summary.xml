@@ -90,17 +90,24 @@
                 android:textColor="#333333" />
         </RadioGroup>
 
-        <!-- Summary Display Area -->
-        <TextView
-            android:id="@+id/tvSummary"
+        <!-- Summary Display Area - Tabular Format -->
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
-            android:padding="16dp"
-            android:textColor="#333333"
-            android:textSize="13sp"
-            android:typeface="monospace"
-            android:minHeight="300dp" />
+            android:fillViewport="true">
+
+            <TableLayout
+                android:id="@+id/tblSummary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:stretchColumns="*"
+                android:shrinkColumns="*"
+                android:background="#FFFFFF"
+                android:padding="8dp">
+
+                <!-- Table header will be added programmatically -->
+            </TableLayout>
+        </HorizontalScrollView>
 
         <!-- Action Buttons -->
         <LinearLayout

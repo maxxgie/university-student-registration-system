@@ -196,4 +196,21 @@ public class SharedPrefManager {
         String json = gson.toJson(payments);
         sharedPreferences.edit().putString(KEY_OFFLINE_PAYMENTS, json).apply();
     }
+
+    // Clear all offline queues (used during sync to prevent duplicates)
+    public void clearOfflineStudents() {
+        sharedPreferences.edit().remove(KEY_OFFLINE_STUDENTS).apply();
+    }
+
+    public void clearOfflineBookRequests() {
+        sharedPreferences.edit().remove(KEY_OFFLINE_BOOK_REQUESTS).apply();
+    }
+
+    public void clearOfflineHostelInfos() {
+        sharedPreferences.edit().remove(KEY_OFFLINE_HOSTEL_INFOS).apply();
+    }
+
+    public void clearOfflinePayments() {
+        sharedPreferences.edit().remove(KEY_OFFLINE_PAYMENTS).apply();
+    }
 }

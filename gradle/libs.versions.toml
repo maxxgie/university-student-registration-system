@@ -7,7 +7,7 @@ appcompat = "1.8.0"
 material = "1.14.0"
 activityKtx = "1.13.0"
 constraintlayout = "2.2.2"
-firebaseBom = "33.12.0"
+firebaseBom = "35.2.0"
 firebaseAuth = "23.1.0"
 firebaseDatabase = "21.0.0"
 firebaseAnalytics = "22.0.0"
@@ -16,6 +16,7 @@ okhttp = "4.12.0"
 retrofit = "2.11.0"
 kotlinxCoroutines = "1.8.0"
 lifecycle = "2.8.0"
+googleServices = "4.6.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -40,4 +41,5 @@ lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-view
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 

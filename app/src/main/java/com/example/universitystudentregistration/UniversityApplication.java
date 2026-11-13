@@ -16,12 +16,13 @@ public class UniversityApplication extends Application {
 
     private static final String TAG = "UniversityApplication";
     private ConnectivityManager.NetworkCallback networkCallback;
+    private static boolean firebaseInitialized = false;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        // Initialize Firebase conditionally
+        // Initialize Firebase FIRST - set persistence before any usage
         initializeFirebase();
 
         // Register network callback for auto-sync when connectivity restored
@@ -35,8 +36,12 @@ public class UniversityApplication extends Application {
                 // No Firebase configured - this is expected without google-services.json
                 Log.i(TAG, "Firebase not configured - running in offline mode");
             } else {
-                // Firebase is configured, enable offline persistence
-                FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+                // Firebase is configured, enable offline persistence IMMEDIATELY
+                // Must be called before any other FirebaseDatabase usage
+                // Explicitly set database URL for the project
+                FirebaseDatabase.getInstance("https://universitystudentregistr-6fc81-default-rtdb.firebaseio.com/")
+                        .setPersistenceEnabled(true);
+                firebaseInitialized = true;
                 Log.i(TAG, "Firebase initialized with offline persistence");
             }
         } catch (IllegalStateException e) {
@@ -45,6 +50,10 @@ public class UniversityApplication extends Application {
         } catch (Exception e) {
             Log.e(TAG, "Error initializing Firebase", e);
         }
+    }
+
+    public static boolean isFirebaseInitialized() {
+        return firebaseInitialized;
     }
 
     private void registerNetworkCallback() {

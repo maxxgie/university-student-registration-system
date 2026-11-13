@@ -3,6 +3,7 @@ package com.example.universitystudentregistration;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -154,13 +155,11 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // If show_login is true and student exists, pre-fill ID and switch to login mode
+        // If show_login is true and student exists, switch to login mode but DON'T pre-fill ID
+        // This allows different users to log in
         if (showLogin && existingStudent != null) {
             isLoginMode = true;
-            // Pre-fill ID number
-            EditText etIdNo = findViewById(R.id.etIdNo);
-            etIdNo.setText(existingStudent.getIdNo());
-            etIdNo.setEnabled(false);
+            // Don't pre-fill ID - allow different users to log in
         }
 
         // Update UI for the current mode (registration or login)
@@ -370,7 +369,9 @@ public class MainActivity extends AppCompatActivity {
         firebaseHelper.saveStudent(student, new FirebaseHelper.OnFirebaseOperationListener() {
             @Override
             public void onSuccess() {
+                Log.d("MainActivity", "onSuccess callback received");
                 runOnUiThread(() -> {
+                    Log.d("MainActivity", "Navigating to dashboard");
                     String statusMsg = NetworkUtil.isConnected(MainActivity.this) ?
                             "Registration successful! Welcome to your dashboard." :
                             "Registration saved offline. Will sync when online. Welcome to your dashboard.";
@@ -385,6 +386,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(String errorMessage) {
+                Log.e("MainActivity", "onFailure callback: " + errorMessage);
                 runOnUiThread(() ->
                         Toast.makeText(MainActivity.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show()
                 );
