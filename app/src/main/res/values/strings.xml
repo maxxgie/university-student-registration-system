@@ -2,6 +2,8 @@
 <resources>
 
     <string name="app_name">Mwangaza University</string>
+    <string name="open_drawer">Open Navigation Drawer</string>
+    <string name="close_drawer">Close Navigation Drawer</string>
 
     <string-array name="departments">
         <item>Technology</item>

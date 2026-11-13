@@ -82,7 +82,12 @@ public class SummaryActivity extends AppCompatActivity {
 
         btnShareSummary.setOnClickListener(v -> shareSummary());
 
-        btnBackToFees.setOnClickListener(v -> finish());
+        btnBackToFees.setOnClickListener(v -> {
+            Intent intent = new Intent(SummaryActivity.this, FeesPaymentActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void loadSummary() {

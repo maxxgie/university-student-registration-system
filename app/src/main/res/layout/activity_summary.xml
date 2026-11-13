@@ -151,7 +151,7 @@
             android:layout_height="48dp"
             android:layout_gravity="center"
             android:backgroundTint="#777777"
-            android:text="Back to Payment"
+            android:text="Start New Registration"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="15sp"

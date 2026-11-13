@@ -138,6 +138,14 @@ public class MainActivity extends AppCompatActivity {
         // Initialize utilities
         sharedPrefManager = new SharedPrefManager(this);
         firebaseHelper = new FirebaseHelper(this);
+
+        // Pre-fill student ID from payment activity if provided
+        String studentIdFromPayment = getIntent().getStringExtra("student_id_no");
+        if (studentIdFromPayment != null && !studentIdFromPayment.isEmpty()) {
+            EditText etIdNo = findViewById(R.id.etIdNo);
+            etIdNo.setText(studentIdFromPayment);
+            etIdNo.setEnabled(false);
+        }
     }
 
     private SharedPrefManager sharedPrefManager;
@@ -237,13 +245,14 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess() {
                 runOnUiThread(() -> {
                     String statusMsg = NetworkUtil.isConnected(MainActivity.this) ?
-                            "Registration successful! Proceeding to library book request..." :
-                            "Registration saved offline. Will sync when online. Proceeding to library book request...";
+                            "Registration successful! Welcome to your dashboard." :
+                            "Registration saved offline. Will sync when online. Welcome to your dashboard.";
                     Toast.makeText(MainActivity.this, statusMsg, Toast.LENGTH_LONG).show();
 
-                    // Navigate to Book Request Activity
-                    Intent intent = new Intent(MainActivity.this, BookRequestActivity.class);
+                    // Navigate to Dashboard
+                    Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
                     startActivity(intent);
+                    finish();
                 });
             }
 

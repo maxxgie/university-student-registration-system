@@ -107,7 +107,7 @@ public class HostelInfoActivity extends AppCompatActivity {
         });
 
         btnNextToFees.setOnClickListener(v -> {
-            Intent intent = new Intent(HostelInfoActivity.this, FeesPaymentActivity.class);
+            Intent intent = new Intent(HostelInfoActivity.this, SummaryActivity.class);
             startActivity(intent);
         });
     }

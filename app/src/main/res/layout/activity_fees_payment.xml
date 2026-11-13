@@ -96,7 +96,7 @@
             android:id="@+id/etFeesAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter amount (e.g., 50000)"
+            android:hint="Enter amount (e.g., 15000)"
             android:inputType="numberDecimal"
             android:padding="12dp"
             android:layout_marginTop="6dp"
@@ -168,22 +168,11 @@
             android:layout_marginBottom="20dp">
 
             <Button
-                android:id="@+id/btnBackToHostel"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:backgroundTint="#777777"
-                android:text="Back"
-                android:textAllCaps="false"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:layout_marginEnd="12dp" />
-
-            <Button
                 android:id="@+id/btnViewSummary"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:backgroundTint="#35145F"
-                android:text="View Summary"
+                android:text="Back to Dashboard"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp" />

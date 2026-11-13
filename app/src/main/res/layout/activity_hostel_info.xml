@@ -188,7 +188,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:backgroundTint="#A88719"
-                android:text="Next: Fees"
+                android:text="Next: View Summary"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp" />
