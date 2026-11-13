@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#F7F5FC">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- University Logo Placeholder -->
+        <ImageView
+            android:id="@+id/ivUniversityLogo"
+            android:layout_width="110dp"
+            android:layout_height="110dp"
+            android:src="@drawable/mwangaza_logo"
+            android:contentDescription="Mwangaza University logo"
+            android:scaleType="fitCenter"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="12dp" />
+
+        <!-- University Name -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:text="MWANGAZA UNIVERSITY"
+            android:textColor="#35145F"
+            android:textSize="23sp"
+            android:textStyle="bold" />
+
+        <!-- University Motto -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="4dp"
+            android:text="Knowledge • Innovation • Excellence"
+            android:textColor="#A88719"
+            android:textSize="13sp" />
+
+        <!-- Activity Heading -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="Registration Summary"
+            android:textColor="#35145F"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="20dp"
+            android:text="View your registration details or all students."
+            android:textColor="#777777"
+            android:textSize="14sp" />
+
+        <!-- Summary Type Selection -->
+        <RadioGroup
+            android:id="@+id/rgSummaryType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp"
+            android:gravity="center">
+
+            <RadioButton
+                android:id="@+id/rbMySummary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Summary"
+                android:textColor="#333333"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rbAllStudents"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:text="All Students"
+                android:textColor="#333333" />
+        </RadioGroup>
+
+        <!-- Summary Display Area -->
+        <TextView
+            android:id="@+id/tvSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:textColor="#333333"
+            android:textSize="13sp"
+            android:typeface="monospace"
+            android:minHeight="300dp" />
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/btnRefreshSummary"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:backgroundTint="#35145F"
+                android:text="Refresh"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:layout_marginEnd="12dp" />
+
+            <Button
+                android:id="@+id/btnSaveSummary"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:backgroundTint="#A88719"
+                android:text="Save to File"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:layout_marginEnd="12dp" />
+
+            <Button
+                android:id="@+id/btnShareSummary"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:backgroundTint="#00A651"
+                android:text="Share"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <!-- Navigation -->
+        <Button
+            android:id="@+id/btnBackToFees"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:backgroundTint="#777777"
+            android:text="Back to Payment"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Footer -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="Your Future, Our Priority."
+            android:textColor="#A88719"
+            android:textSize="14sp"
+            android:textStyle="italic" />
+
+    </LinearLayout>
+
+</ScrollView>

@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#F7F5FC">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- University Logo Placeholder -->
+        <ImageView
+            android:id="@+id/ivUniversityLogo"
+            android:layout_width="110dp"
+            android:layout_height="110dp"
+            android:src="@drawable/mwangaza_logo"
+            android:contentDescription="Mwangaza University logo"
+            android:scaleType="fitCenter"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="12dp" />
+
+        <!-- University Name -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:text="MWANGAZA UNIVERSITY"
+            android:textColor="#35145F"
+            android:textSize="23sp"
+            android:textStyle="bold" />
+
+        <!-- University Motto -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="4dp"
+            android:text="Knowledge • Innovation • Excellence"
+            android:textColor="#A88719"
+            android:textSize="13sp" />
+
+        <!-- Activity Heading -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="Library Book Request"
+            android:textColor="#35145F"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="20dp"
+            android:text="Enter book details to request from the library."
+            android:textColor="#777777"
+            android:textSize="14sp" />
+
+        <!-- Book ISBN -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Book ISBN"
+            android:textColor="#35145F"
+            android:textStyle="bold"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/etBookIsbn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter book ISBN"
+            android:inputType="textCapCharacters"
+            android:padding="12dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Author -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Author"
+            android:textColor="#35145F"
+            android:textStyle="bold"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/etAuthor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter author name"
+            android:inputType="textCapWords|textPersonName"
+            android:padding="12dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:textColor="#35145F"
+            android:textStyle="bold"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/etTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter book title"
+            android:inputType="textCapWords"
+            android:padding="12dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Date Borrowed -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Date Borrowed"
+            android:textColor="#35145F"
+            android:textStyle="bold"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/etDateBorrowed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="DD/MM/YYYY"
+            android:inputType="date"
+            android:padding="12dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Date of Return -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Date of Return"
+            android:textColor="#35145F"
+            android:textStyle="bold"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/etDateOfReturn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="DD/MM/YYYY"
+            android:inputType="date"
+            android:padding="12dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Student ID Number -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Student ID Number"
+            android:textColor="#35145F"
+            android:textStyle="bold"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/etStudentIdNoBook"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter your student ID number"
+            android:inputType="number"
+            android:padding="12dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Submit Button -->
+        <Button
+            android:id="@+id/btnSubmitBookRequest"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:backgroundTint="#35145F"
+            android:text="Submit Request"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <!-- Navigation Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:layout_marginBottom="20dp">
+
+            <Button
+                android:id="@+id/btnBackToRegistration"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:backgroundTint="#777777"
+                android:text="Back"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:layout_marginEnd="12dp" />
+
+            <Button
+                android:id="@+id/btnNextToHostel"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:backgroundTint="#A88719"
+                android:text="Next: Hostel"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <!-- Footer -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="Your Future, Our Priority."
+            android:textColor="#A88719"
+            android:textSize="14sp"
+            android:textStyle="italic" />
+
+    </LinearLayout>
+
+</ScrollView>

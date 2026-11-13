@@ -1,0 +1,62 @@
+
+<resources>
+
+    <string name="app_name">Mwangaza University</string>
+
+    <string-array name="departments">
+        <item>Technology</item>
+        <item>Engineering</item>
+        <item>Commerce</item>
+        <item>Nursing</item>
+        <item>Food Science</item>
+    </string-array>
+
+    <string-array name="technology_courses">
+        <item>Computer Science</item>
+        <item>Information Technology</item>
+        <item>Software Engineering</item>
+    </string-array>
+
+    <string-array name="engineering_courses">
+        <item>Civil Engineering</item>
+        <item>Electrical and Electronic Engineering</item>
+        <item>Mechanical Engineering</item>
+    </string-array>
+
+    <string-array name="commerce_courses">
+        <item>Accounting</item>
+        <item>Finance</item>
+        <item>Procurement and Supply Chain Management</item>
+    </string-array>
+
+    <string-array name="nursing_courses">
+        <item>Bachelor of Science in Nursing</item>
+        <item>Community Health Nursing</item>
+        <item>Midwifery</item>
+    </string-array>
+
+    <string-array name="food_science_courses">
+        <item>Food Science and Technology</item>
+        <item>Food Nutrition and Dietetics</item>
+        <item>Food Processing Technology</item>
+    </string-array>
+
+    <string-array name="hostel_locations">
+        <item>Main Campus - Block A</item>
+        <item>Main Campus - Block B</item>
+        <item>Main Campus - Block C</item>
+        <item>Town Campus - Hostel 1</item>
+        <item>Town Campus - Hostel 2</item>
+        <item>Off Campus - Private Hostels</item>
+    </string-array>
+
+    <string-array name="room_types">
+        <item>Bedsitter</item>
+        <item>1 Bedroom</item>
+        <item>2 Bedroom</item>
+        <item>3 Bedroom</item>
+        <item>Shared Room (2 persons)</item>
+        <item>Shared Room (4 persons)</item>
+    </string-array>
+
+</resources>
