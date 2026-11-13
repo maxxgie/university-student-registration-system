@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -25,6 +26,8 @@ import com.example.universitystudentregistration.util.NetworkUtil;
 import com.example.universitystudentregistration.util.SharedPrefManager;
 
 public class MainActivity extends AppCompatActivity {
+
+    private boolean isLoginMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,14 +133,48 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-        // Connect the Register button
+        // Connect the Register/Login button
         Button btnRegister = findViewById(R.id.btnRegister);
-
-        btnRegister.setOnClickListener(v -> validateRegistration());
+        TextView tvToggleMode = findViewById(R.id.tvToggleMode);
 
         // Initialize utilities
         sharedPrefManager = new SharedPrefManager(this);
         firebaseHelper = new FirebaseHelper(this);
+
+        // Check if we should show login screen (from logout)
+        boolean showLogin = getIntent().getBooleanExtra("show_login", false);
+
+        // Check if student already registered - auto-login (unless show_login flag is set)
+        Student existingStudent = sharedPrefManager.getStudent();
+        if (existingStudent != null && !showLogin) {
+            // Student already registered, go to dashboard
+            Intent intent = new Intent(this, DashboardActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        // If show_login is true and student exists, pre-fill ID and switch to login mode
+        if (showLogin && existingStudent != null) {
+            isLoginMode = true;
+            // Pre-fill ID number
+            EditText etIdNo = findViewById(R.id.etIdNo);
+            etIdNo.setText(existingStudent.getIdNo());
+            etIdNo.setEnabled(false);
+        }
+
+        // Update UI for the current mode (registration or login)
+        updateUIForMode();
+
+        // Set initial button click listener based on mode
+        updateButtonListener(btnRegister);
+
+        // Toggle mode click listener
+        tvToggleMode.setOnClickListener(v -> {
+            isLoginMode = !isLoginMode;
+            updateUIForMode();
+            updateButtonListener(btnRegister);
+        });
 
         // Pre-fill student ID from payment activity if provided
         String studentIdFromPayment = getIntent().getStringExtra("student_id_no");
@@ -150,6 +187,96 @@ public class MainActivity extends AppCompatActivity {
 
     private SharedPrefManager sharedPrefManager;
     private FirebaseHelper firebaseHelper;
+
+    private void updateUIForMode() {
+        TextView tvHeading = findViewById(R.id.tvHeading);
+        TextView tvSubtitle = findViewById(R.id.tvSubtitle);
+        TextView tvToggleMode = findViewById(R.id.tvToggleMode);
+        EditText etFullNames = findViewById(R.id.etFullNames);
+        EditText etRegistrationNumber = findViewById(R.id.etRegistrationNumber);
+        RadioGroup rgGender = findViewById(R.id.rgGender);
+        Spinner spDepartment = findViewById(R.id.spDepartment);
+        Spinner spCourse = findViewById(R.id.spCourse);
+        Button btnAction = findViewById(R.id.btnRegister);
+
+        if (isLoginMode) {
+            tvHeading.setText("Student Login");
+            tvSubtitle.setText("Enter your ID and Registration Number to login.");
+            tvToggleMode.setText("Don't have an account? Register");
+            btnAction.setText("Login");
+            
+            // Hide registration-only fields
+            etFullNames.setVisibility(View.GONE);
+            etRegistrationNumber.setVisibility(View.GONE);
+            rgGender.setVisibility(View.GONE);
+            spDepartment.setVisibility(View.GONE);
+            spCourse.setVisibility(View.GONE);
+            
+            // Update hints
+            findViewById(R.id.tvFullNamesLabel).setVisibility(View.GONE);
+            findViewById(R.id.tvRegNumberLabel).setVisibility(View.GONE);
+            findViewById(R.id.tvGenderLabel).setVisibility(View.GONE);
+            findViewById(R.id.tvDepartmentLabel).setVisibility(View.GONE);
+            findViewById(R.id.tvCourseLabel).setVisibility(View.GONE);
+        } else {
+            tvHeading.setText("Student Registration");
+            tvSubtitle.setText("Please enter your details to register.");
+            tvToggleMode.setText("Already registered? Login");
+            btnAction.setText("Register");
+            
+            // Show all fields
+            etFullNames.setVisibility(View.VISIBLE);
+            etRegistrationNumber.setVisibility(View.VISIBLE);
+            rgGender.setVisibility(View.VISIBLE);
+            spDepartment.setVisibility(View.VISIBLE);
+            spCourse.setVisibility(View.VISIBLE);
+            
+            findViewById(R.id.tvFullNamesLabel).setVisibility(View.VISIBLE);
+            findViewById(R.id.tvRegNumberLabel).setVisibility(View.VISIBLE);
+            findViewById(R.id.tvGenderLabel).setVisibility(View.VISIBLE);
+            findViewById(R.id.tvDepartmentLabel).setVisibility(View.VISIBLE);
+            findViewById(R.id.tvCourseLabel).setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void updateButtonListener(Button btnAction) {
+        btnAction.setOnClickListener(v -> {
+            if (isLoginMode) {
+                validateLogin();
+            } else {
+                validateRegistration();
+            }
+        });
+    }
+
+    // Validate student login details
+    private void validateLogin() {
+        EditText etIdNo = findViewById(R.id.etIdNo);
+
+        String idNo = etIdNo.getText().toString().trim();
+
+        // Validate ID Number: exactly 8 digits
+        if (!idNo.matches("\\d{8}")) {
+            etIdNo.setError("ID Number must contain exactly 8 digits");
+            etIdNo.requestFocus();
+            return;
+        }
+
+        // Check if student exists locally
+        Student student = sharedPrefManager.getStudent();
+        if (student != null && student.getIdNo().equals(idNo)) {
+            // Login successful
+            Toast.makeText(this, "Login successful! Welcome back, " + student.getFullNames().split("\\s+")[0], Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(this, DashboardActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        // Not found locally - show error
+        etIdNo.setError("No registration found with this ID. Please register first.");
+        etIdNo.requestFocus();
+    }
 
     // Validate student registration details
     private void validateRegistration() {

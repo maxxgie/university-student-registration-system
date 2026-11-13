@@ -45,8 +45,9 @@
             android:textColor="#A88719"
             android:textSize="13sp" />
 
-        <!-- Registration Heading -->
+        <!-- Registration/Login Heading -->
         <TextView
+            android:id="@+id/tvHeading"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
@@ -56,6 +57,7 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/tvSubtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
@@ -66,6 +68,7 @@
 
         <!-- Full Names -->
         <TextView
+            android:id="@+id/tvFullNamesLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Full Names"
@@ -104,6 +107,7 @@
 
         <!-- Registration Number -->
         <TextView
+            android:id="@+id/tvRegNumberLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Registration Number"
@@ -123,6 +127,7 @@
 
         <!-- Gender -->
         <TextView
+            android:id="@+id/tvGenderLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Gender"
@@ -157,6 +162,7 @@
 
         <!-- Department -->
         <TextView
+            android:id="@+id/tvDepartmentLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Department"
@@ -174,6 +180,7 @@
 
         <!-- Course -->
         <TextView
+            android:id="@+id/tvCourseLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Course"
@@ -189,7 +196,7 @@
             android:layout_marginBottom="24dp"
             android:spinnerMode="dropdown" />
 
-        <!-- Register Button -->
+        <!-- Register/Login Button -->
         <Button
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"
@@ -199,6 +206,18 @@
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <!-- Toggle Mode -->
+        <TextView
+            android:id="@+id/tvToggleMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="Already registered? Login"
+            android:textColor="#35145F"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <!-- Footer -->

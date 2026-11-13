@@ -1,6 +1,10 @@
 package com.example.universitystudentregistration;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,13 +16,15 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.universitystudentregistration.model.Student;
 import com.example.universitystudentregistration.model.HostelInfo;
 import com.example.universitystudentregistration.model.Payment;
-import com.example.universitystudentregistration.model.Student;
 import com.example.universitystudentregistration.util.FirebaseHelper;
 import com.example.universitystudentregistration.util.NetworkUtil;
 import com.example.universitystudentregistration.util.SharedPrefManager;
@@ -27,6 +33,9 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.List;
 
 public class DashboardActivity extends AppCompatActivity {
+
+    private static final String CHANNEL_ID = "fees_reminder_channel";
+    private static final int NOTIFICATION_ID = 1001;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -40,13 +49,15 @@ public class DashboardActivity extends AppCompatActivity {
     private TextView tvNavStudentName, tvNavStudentId;
     private TextView tvStatRegistration, tvStatFees, tvStatHostel;
 
-    private View cardFeesPayment, cardHostelInfo, cardLibraryBooks, cardMyProfile, cardSyncData, cardSettings;
+    private CardView cardFeesPayment, cardHostelInfo, cardLibraryBooks, cardMyProfile, cardSyncData, cardSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
+
+        createNotificationChannel();
 
         // Initialize utilities
         sharedPrefManager = new SharedPrefManager(this);
@@ -91,11 +102,53 @@ public class DashboardActivity extends AppCompatActivity {
 
         // Card click listeners
         cardFeesPayment.setOnClickListener(v -> openFeesPayment());
-        cardHostelInfo.setOnClickListener(v -> openHostelInfo());
-        cardLibraryBooks.setOnClickListener(v -> openLibraryBooks());
+        cardHostelInfo.setOnClickListener(v -> {
+            if (isFeesPaid()) openHostelInfo();
+            else showFeesRequiredNotification();
+        });
+        cardLibraryBooks.setOnClickListener(v -> {
+            if (isFeesPaid()) openLibraryBooks();
+            else showFeesRequiredNotification();
+        });
         cardMyProfile.setOnClickListener(v -> openMyProfile());
         cardSyncData.setOnClickListener(v -> syncOfflineData());
         cardSettings.setOnClickListener(v -> openSettings());
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Fees Payment Reminder";
+            String description = "Notifications for fees payment requirements";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    private void showFeesRequiredNotification() {
+        // Show toast immediately
+        Toast.makeText(this, "Fees payment required! Please pay your registration fees first to access this service.", Toast.LENGTH_LONG).show();
+
+        // Send system notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setContentTitle("Fees Payment Required")
+                .setContentText("You must complete fees payment before accessing Hostel Info or Library Books services. Please pay your registration fees first.")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText("You must complete fees payment before accessing Hostel Info or Library Books services. Please pay your registration fees first."));
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        try {
+            notificationManager.notify(NOTIFICATION_ID, builder.build());
+        } catch (Exception e) {
+            // Notification permission may not be granted on Android 13+
+        }
     }
 
     private void loadStudentData() {
@@ -110,9 +163,9 @@ public class DashboardActivity extends AppCompatActivity {
             tvStatRegistration.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
 
             // Check fees payment
-            List<com.example.universitystudentregistration.model.Payment> payments = sharedPrefManager.getPayments();
+            List<Payment> payments = sharedPrefManager.getPayments();
             boolean feesPaid = false;
-            for (com.example.universitystudentregistration.model.Payment p : payments) {
+            for (Payment p : payments) {
                 if (p.getStudentIdNo().equals(student.getIdNo()) && "completed".equals(p.getStatus())) {
                     feesPaid = true;
                     break;
@@ -127,9 +180,9 @@ public class DashboardActivity extends AppCompatActivity {
             }
 
             // Check hostel info
-            List<com.example.universitystudentregistration.model.HostelInfo> hostels = sharedPrefManager.getHostelInfos();
+            List<HostelInfo> hostels = sharedPrefManager.getHostelInfos();
             boolean hostelDone = false;
-            for (com.example.universitystudentregistration.model.HostelInfo h : hostels) {
+            for (HostelInfo h : hostels) {
                 if (h.getStudentIdNo().equals(student.getIdNo())) {
                     hostelDone = true;
                     break;
@@ -141,7 +194,39 @@ public class DashboardActivity extends AppCompatActivity {
             } else {
                 tvStatHostel.setText("🏠");
             }
+
+            // Gate features based on payment status
+            updateFeatureAccess(feesPaid);
         }
+    }
+
+    private boolean isFeesPaid() {
+        Student student = sharedPrefManager.getStudent();
+        if (student == null) return false;
+        
+        List<Payment> payments = sharedPrefManager.getPayments();
+        for (Payment p : payments) {
+            if (p.getStudentIdNo().equals(student.getIdNo()) && "completed".equals(p.getStatus())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void updateFeatureAccess(boolean feesPaid) {
+        // Enable/disable Hostel Info card
+        cardHostelInfo.setEnabled(feesPaid);
+        cardHostelInfo.setAlpha(feesPaid ? 1.0f : 0.5f);
+        cardHostelInfo.setClickable(feesPaid);
+        
+        // Enable/disable Library Books card
+        cardLibraryBooks.setEnabled(feesPaid);
+        cardLibraryBooks.setAlpha(feesPaid ? 1.0f : 0.5f);
+        cardLibraryBooks.setClickable(feesPaid);
+        
+        // Update nav menu items
+        navigationView.getMenu().findItem(R.id.nav_hostel_info).setEnabled(feesPaid);
+        navigationView.getMenu().findItem(R.id.nav_library_books).setEnabled(feesPaid);
     }
 
     private boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -151,9 +236,11 @@ public class DashboardActivity extends AppCompatActivity {
         } else if (id == R.id.nav_fees_payment) {
             openFeesPayment();
         } else if (id == R.id.nav_hostel_info) {
-            openHostelInfo();
+            if (isFeesPaid()) openHostelInfo();
+            else showFeesRequiredNotification();
         } else if (id == R.id.nav_library_books) {
-            openLibraryBooks();
+            if (isFeesPaid()) openLibraryBooks();
+            else showFeesRequiredNotification();
         } else if (id == R.id.nav_my_profile) {
             openMyProfile();
         } else if (id == R.id.nav_sync_data) {
@@ -201,9 +288,11 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void logout() {
-        sharedPrefManager.clearStudent();
+        // Don't clear student data - keep it for login
+        // Just navigate to MainActivity with flag to show login screen
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra("show_login", true);
         startActivity(intent);
         finish();
     }

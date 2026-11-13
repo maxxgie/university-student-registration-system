@@ -127,7 +127,14 @@ public class DarajaClient {
                         if (listener != null) listener.onFailure("Invalid token response");
                     }
                 } else {
-                    String error = response.body() != null ? "HTTP " + response.code() : "Unknown error";
+                    String error = "HTTP " + response.code();
+                    try {
+                        if (response.body() != null) {
+                            error += ": " + response.body().string();
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error reading error body", e);
+                    }
                     if (response.body() != null) response.body().close();
                     Log.e(TAG, "Token fetch failed: " + error);
                     if (listener != null) listener.onFailure("Token fetch failed: " + error);
@@ -187,6 +194,11 @@ public class DarajaClient {
         request.setCallBackURL(env.getCallbackUrl());
         request.setAccountReference(accountReference != null ? accountReference : appConfig.getAccountReference());
         request.setTransactionDesc(transactionDesc != null ? transactionDesc : appConfig.getTransactionDesc());
+
+        // Log the full request for debugging
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        Log.d(TAG, "STK Push request: " + gson.toJson(request));
+        Log.d(TAG, "STK Push details - ShortCode: " + env.getShortcode() + ", Passkey length: " + (env.getPasskey() != null ? env.getPasskey().length() : "null") + ", Timestamp: " + timestamp + ", Password: " + password);
 
         apiService.stkPush(request).enqueue(new Callback<STKPushResponse>() {
             @Override
