@@ -4,6 +4,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -17,10 +19,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.activity.OnBackPressedCallback;
 
 import com.example.universitystudentregistration.model.Student;
 import com.example.universitystudentregistration.model.HostelInfo;
@@ -100,6 +105,19 @@ public class DashboardActivity extends AppCompatActivity {
         // Load student data and update UI
         loadStudentData();
 
+        // Handle back button with OnBackPressedDispatcher (replaces deprecated onBackPressed)
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    setEnabled(false);
+                    onBackPressed();
+                }
+            }
+        });
+
         // Card click listeners
         cardFeesPayment.setOnClickListener(v -> openFeesPayment());
         cardHostelInfo.setOnClickListener(v -> {
@@ -144,10 +162,14 @@ public class DashboardActivity extends AppCompatActivity {
                         .bigText("You must complete fees payment before accessing Hostel Info or Library Books services. Please pay your registration fees first."));
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        try {
+        // Check notification permission for Android 13+ (API 33+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    == PackageManager.PERMISSION_GRANTED) {
+                notificationManager.notify(NOTIFICATION_ID, builder.build());
+            }
+        } else {
             notificationManager.notify(NOTIFICATION_ID, builder.build());
-        } catch (Exception e) {
-            // Notification permission may not be granted on Android 13+
         }
     }
 
@@ -295,15 +317,6 @@ public class DashboardActivity extends AppCompatActivity {
         intent.putExtra("show_login", true);
         startActivity(intent);
         finish();
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
     }
 
     @Override
