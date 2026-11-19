@@ -133,8 +133,8 @@ public class HostelInfoActivity extends AppCompatActivity {
             return;
         }
 
-        if (!studentIdNo.matches("\\d{8}")) {
-            etStudentIdNoHostel.setError("ID Number must contain exactly 8 digits");
+        if (!studentIdNo.matches("\\d{8,9}")) {
+            etStudentIdNoHostel.setError("ID Number must contain 8 or 9 digits");
             etStudentIdNoHostel.requestFocus();
             return;
         }

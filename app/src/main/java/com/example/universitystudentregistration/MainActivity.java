@@ -253,9 +253,9 @@ public class MainActivity extends AppCompatActivity {
 
         String idNo = etIdNo.getText().toString().trim();
 
-        // Validate ID Number: exactly 8 digits
-        if (!idNo.matches("\\d{8}")) {
-            etIdNo.setError("ID Number must contain exactly 8 digits");
+        // Validate ID Number: 8 or 9 digits
+        if (!idNo.matches("\\d{8,9}")) {
+            etIdNo.setError("ID Number must contain 8 or 9 digits");
             etIdNo.requestFocus();
             return;
         }
@@ -362,11 +362,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // Validate ID Number: exactly 8 digits
-        if (!idNo.matches("\\d{8}")) {
+        // Validate ID Number: 8 or 9 digits
+        if (!idNo.matches("\\d{8,9}")) {
 
             etIdNo.setError(
-                    "ID Number must contain exactly 8 digits"
+                    "ID Number must contain 8 or 9 digits"
             );
             etIdNo.requestFocus();
             return;

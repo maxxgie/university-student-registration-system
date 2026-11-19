@@ -75,7 +75,7 @@ public class BookRequestActivity extends AppCompatActivity {
         etTitle.setHint("Book title");
         etDateBorrowed.setHint("Date borrowed (tap to select)");
         etDateOfReturn.setHint("Date of return (tap to select)");
-        etStudentIdNoBook.setHint("Student ID (8 digits)");
+        etStudentIdNoBook.setHint("Student ID (8 or 9 digits)");
 
         // Pre-fill student ID if available
         Student student = sharedPrefManager.getStudent();
@@ -191,8 +191,8 @@ public class BookRequestActivity extends AppCompatActivity {
             return;
         }
 
-        if (!studentIdNo.matches("\\d{8}")) {
-            etStudentIdNoBook.setError("ID Number must contain exactly 8 digits");
+        if (!studentIdNo.matches("\\d{8,9}")) {
+            etStudentIdNoBook.setError("ID Number must contain 8 or 9 digits");
             etStudentIdNoBook.requestFocus();
             return;
         }

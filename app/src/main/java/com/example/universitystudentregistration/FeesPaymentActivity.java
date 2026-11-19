@@ -148,8 +148,8 @@ public class FeesPaymentActivity extends AppCompatActivity {
             return;
         }
 
-        if (!studentIdNo.matches("\\d{8}")) {
-            etStudentIdNoFees.setError("ID Number must contain exactly 8 digits");
+        if (!studentIdNo.matches("\\d{8,9}")) {
+            etStudentIdNoFees.setError("ID Number must contain 8 or 9 digits");
             etStudentIdNoFees.requestFocus();
             return;
         }
