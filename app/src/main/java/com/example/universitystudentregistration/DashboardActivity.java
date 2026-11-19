@@ -263,6 +263,8 @@ public class DashboardActivity extends AppCompatActivity {
         } else if (id == R.id.nav_library_books) {
             if (isFeesPaid()) openLibraryBooks();
             else showFeesRequiredNotification();
+        } else if (id == R.id.nav_pending_requests) {
+            openPendingRequests();
         } else if (id == R.id.nav_my_profile) {
             openMyProfile();
         } else if (id == R.id.nav_sync_data) {
@@ -293,6 +295,11 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void openMyProfile() {
         Intent intent = new Intent(this, SummaryActivity.class);
+        startActivity(intent);
+    }
+
+    private void openPendingRequests() {
+        Intent intent = new Intent(this, PendingRequestsActivity.class);
         startActivity(intent);
     }
 

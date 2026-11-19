@@ -260,10 +260,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Check if student exists locally
+        // Check if student exists locally first
         Student student = sharedPrefManager.getStudent();
         if (student != null && student.getIdNo().equals(idNo)) {
-            // Login successful
+            // Login successful - local data found
             Toast.makeText(this, "Login successful! Welcome back, " + student.getFullNames().split("\\s+")[0], Toast.LENGTH_LONG).show();
             Intent intent = new Intent(this, DashboardActivity.class);
             startActivity(intent);
@@ -271,9 +271,49 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Not found locally - show error
-        etIdNo.setError("No registration found with this ID. Please register first.");
-        etIdNo.requestFocus();
+        // Not found locally - try Firebase (handles reinstall case)
+        if (NetworkUtil.isConnected(this)) {
+            Toast.makeText(this, "Looking up your registration in database...", Toast.LENGTH_SHORT).show();
+            firebaseHelper.findStudentById(idNo, new FirebaseHelper.OnStudentFoundListener() {
+                @Override
+                public void onFound(Student foundStudent) {
+                    runOnUiThread(() -> {
+                        // Save student to local preferences
+                        sharedPrefManager.saveStudent(foundStudent);
+
+                        // Restore all student activities from Firebase (book requests, hostel info, payments)
+                        firebaseHelper.restoreStudentData(idNo, new FirebaseHelper.OnDataRestoredListener() {
+                            @Override
+                            public void onRestored(boolean success, String message) {
+                                if (success) {
+                                    Toast.makeText(MainActivity.this, "All your data restored from database", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Partial data restored: " + message, Toast.LENGTH_SHORT).show();
+                                }
+                                // Navigate to Dashboard AFTER data is restored
+                                Toast.makeText(MainActivity.this, "Login successful! Welcome back, " + foundStudent.getFullNames().split("\\s+")[0], Toast.LENGTH_LONG).show();
+                                Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        });
+                    });
+                }
+
+                @Override
+                public void onNotFound(String message) {
+                    runOnUiThread(() -> {
+                        etIdNo.setError("No registration found with this ID. Please register first.");
+                        etIdNo.requestFocus();
+                        Toast.makeText(MainActivity.this, "Student not found. Please register first.", Toast.LENGTH_LONG).show();
+                    });
+                }
+            });
+        } else {
+            etIdNo.setError("No registration found with this ID. Please register first.");
+            etIdNo.requestFocus();
+            Toast.makeText(this, "Offline mode - student data not found locally. Connect to internet to sync.", Toast.LENGTH_LONG).show();
+        }
     }
 
     // Validate student registration details
@@ -358,6 +398,35 @@ public class MainActivity extends AppCompatActivity {
 
         String gender = rgGender.getCheckedRadioButtonId() == R.id.rbMale ? "Male" : "Female";
 
+        // Check ID uniqueness - student ID must be unique
+        if (NetworkUtil.isConnected(MainActivity.this)) {
+            firebaseHelper.checkStudentIdExists(idNo, new FirebaseHelper.OnIdCheckListener() {
+                @Override
+                public void onExists(boolean exists) {
+                    runOnUiThread(() -> {
+                        if (exists) {
+                            etIdNo.setError("This ID number is already registered. Each student can register only once.");
+                            etIdNo.requestFocus();
+                            return;
+                        }
+                        proceedWithRegistration(fullNames, idNo, registrationNumber, gender, department, course);
+                    });
+                }
+            });
+        } else {
+            // Offline - check local SharedPreferences
+            Student existingLocal = sharedPrefManager.getStudent();
+            if (existingLocal != null && existingLocal.getIdNo().equals(idNo)) {
+                etIdNo.setError("This ID number is already registered locally.");
+                etIdNo.requestFocus();
+                return;
+            }
+            proceedWithRegistration(fullNames, idNo, registrationNumber, gender, department, course);
+        }
+    }
+
+    private void proceedWithRegistration(String fullNames, String idNo, String registrationNumber,
+                                          String gender, String department, String course) {
         // All validation checks have passed - create student object
         Student student = new Student(fullNames, idNo, registrationNumber, gender, department, course);
 

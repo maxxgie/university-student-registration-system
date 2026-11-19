@@ -1,9 +1,11 @@
 package com.example.universitystudentregistration;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -19,6 +21,8 @@ import com.example.universitystudentregistration.model.Student;
 import com.example.universitystudentregistration.util.FirebaseHelper;
 import com.example.universitystudentregistration.util.NetworkUtil;
 import com.example.universitystudentregistration.util.SharedPrefManager;
+
+import java.util.Calendar;
 
 public class BookRequestActivity extends AppCompatActivity {
 
@@ -65,9 +69,13 @@ public class BookRequestActivity extends AppCompatActivity {
         etDateOfReturn = findViewById(R.id.etDateOfReturn);
         etStudentIdNoBook = findViewById(R.id.etStudentIdNoBook);
 
-        btnSubmitBookRequest = findViewById(R.id.btnSubmitBookRequest);
-        btnBackToRegistration = findViewById(R.id.btnBackToRegistration);
-        btnNextToHostel = findViewById(R.id.btnNextToHostel);
+        // Set placeholders/hints for input fields
+        etBookIsbn.setHint("ISBN (e.g., 978-0-123456-78-9)");
+        etAuthor.setHint("Author name");
+        etTitle.setHint("Book title");
+        etDateBorrowed.setHint("Date borrowed (tap to select)");
+        etDateOfReturn.setHint("Date of return (tap to select)");
+        etStudentIdNoBook.setHint("Student ID (8 digits)");
 
         // Pre-fill student ID if available
         Student student = sharedPrefManager.getStudent();
@@ -76,7 +84,19 @@ public class BookRequestActivity extends AppCompatActivity {
             etStudentIdNoBook.setEnabled(false);
         }
 
+        // Date picker for Date Borrowed
+        etDateBorrowed.setFocusable(false);
+        etDateBorrowed.setOnClickListener(v -> showDatePicker(etDateBorrowed));
+
+        // Date picker for Date of Return
+        etDateOfReturn.setFocusable(false);
+        etDateOfReturn.setOnClickListener(v -> showDatePicker(etDateOfReturn));
+
         // Submit button click
+        btnSubmitBookRequest = findViewById(R.id.btnSubmitBookRequest);
+        btnBackToRegistration = findViewById(R.id.btnBackToRegistration);
+        btnNextToHostel = findViewById(R.id.btnNextToHostel);
+
         btnSubmitBookRequest.setOnClickListener(v -> validateAndSubmitBookRequest());
 
         // Navigation buttons
@@ -88,6 +108,27 @@ public class BookRequestActivity extends AppCompatActivity {
             Intent intent = new Intent(BookRequestActivity.this, HostelInfoActivity.class);
             startActivity(intent);
         });
+    }
+
+    private void showDatePicker(final EditText dateField) {
+        final Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDayOfMonth) {
+                        String date = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDayOfMonth);
+                        dateField.setText(date);
+                    }
+                },
+                year, month, day
+        );
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+        datePickerDialog.show();
     }
 
     private void validateAndSubmitBookRequest() {
@@ -122,16 +163,25 @@ public class BookRequestActivity extends AppCompatActivity {
 
         // Validate Date Borrowed
         if (dateBorrowed.isEmpty()) {
-            etDateBorrowed.setError("Please enter date borrowed");
+            etDateBorrowed.setError("Please select date borrowed");
             etDateBorrowed.requestFocus();
             return;
         }
 
         // Validate Date of Return
         if (dateOfReturn.isEmpty()) {
-            etDateOfReturn.setError("Please enter date of return");
+            etDateOfReturn.setError("Please select date of return");
             etDateOfReturn.requestFocus();
             return;
+        }
+
+        // Validate that return date is after borrow date
+        if (!dateBorrowed.isEmpty() && !dateOfReturn.isEmpty()) {
+            if (dateOfReturn.compareTo(dateBorrowed) < 0) {
+                etDateOfReturn.setError("Return date must be after borrow date");
+                etDateOfReturn.requestFocus();
+                return;
+            }
         }
 
         // Validate Student ID

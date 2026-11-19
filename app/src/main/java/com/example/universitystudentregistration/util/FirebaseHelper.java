@@ -58,6 +58,68 @@ public class FirebaseHelper {
         }
     }
 
+    // Find student by ID number in Firebase (for login persistence across reinstall)
+    public void findStudentById(String idNo, OnStudentFoundListener listener) {
+        if (!isFirebaseReady() || !NetworkUtil.isConnected(context)) {
+            if (listener != null) listener.onNotFound("Offline - cannot query Firebase");
+            return;
+        }
+
+        databaseReference.child("students")
+                .orderByChild("idNo")
+                .equalTo(idNo)
+                .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                    @Override
+                    public void onDataChange(com.google.firebase.database.DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            for (com.google.firebase.database.DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                Student foundStudent = snapshot.getValue(Student.class);
+                                if (foundStudent != null) {
+                                    foundStudent.setFirebaseKey(snapshot.getKey());
+                                    listener.onFound(foundStudent);
+                                    return;
+                                }
+                            }
+                        }
+                        if (listener != null) listener.onNotFound("Student not found in database");
+                    }
+
+                    @Override
+                    public void onCancelled(com.google.firebase.database.DatabaseError databaseError) {
+                        if (listener != null) listener.onNotFound(databaseError.getMessage());
+                    }
+                });
+    }
+
+    // Check if student ID already exists in Firebase (for uniqueness validation)
+    public void checkStudentIdExists(String idNo, OnIdCheckListener listener) {
+        if (!isFirebaseReady() || !NetworkUtil.isConnected(context)) {
+            // When offline, check local SharedPreferences
+            Student existing = sharedPrefManager.getStudent();
+            if (existing != null && existing.getIdNo().equals(idNo)) {
+                listener.onExists(true);
+            } else {
+                listener.onExists(false);
+            }
+            return;
+        }
+
+        databaseReference.child("students")
+                .orderByChild("idNo")
+                .equalTo(idNo)
+                .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                    @Override
+                    public void onDataChange(com.google.firebase.database.DataSnapshot dataSnapshot) {
+                        listener.onExists(dataSnapshot.exists());
+                    }
+
+                    @Override
+                    public void onCancelled(com.google.firebase.database.DatabaseError databaseError) {
+                        listener.onExists(false);
+                    }
+                });
+    }
+
     public void saveBookRequest(BookRequest bookRequest, OnFirebaseOperationListener listener) {
         if (!isFirebaseReady() || !NetworkUtil.isConnected(context)) {
             sharedPrefManager.addOfflineBookRequest(bookRequest);
@@ -182,5 +244,127 @@ public class FirebaseHelper {
     public interface OnFirebaseOperationListener {
         void onSuccess();
         void onFailure(String errorMessage);
+    }
+
+    public interface OnStudentFoundListener {
+        void onFound(Student student);
+        void onNotFound(String message);
+    }
+
+    public interface OnIdCheckListener {
+        void onExists(boolean exists);
+    }
+
+    // Restore all student data from Firebase after reinstall
+    public void restoreStudentData(String idNo, OnDataRestoredListener listener) {
+        if (!isFirebaseReady() || !NetworkUtil.isConnected(context)) {
+            if (listener != null) listener.onRestored(false, "Offline - cannot restore from Firebase");
+            return;
+        }
+
+        final int[] pending = {3};
+        final boolean[] success = {true};
+        final StringBuilder errorMsg = new StringBuilder();
+
+        // Restore book requests
+        databaseReference.child("bookRequests")
+                .orderByChild("studentIdNo")
+                .equalTo(idNo)
+                .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                    @Override
+                    public void onDataChange(com.google.firebase.database.DataSnapshot dataSnapshot) {
+                        List<BookRequest> requests = new ArrayList<>();
+                        for (com.google.firebase.database.DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            BookRequest req = snapshot.getValue(BookRequest.class);
+                            if (req != null) {
+                                req.setFirebaseKey(snapshot.getKey());
+                                requests.add(req);
+                            }
+                        }
+                        sharedPrefManager.clearOfflineBookRequests();
+                        for (BookRequest req : requests) {
+                            sharedPrefManager.saveBookRequest(req);
+                        }
+                        checkComplete(pending, success, errorMsg, listener);
+                    }
+
+                    @Override
+                    public void onCancelled(com.google.firebase.database.DatabaseError databaseError) {
+                        success[0] = false;
+                        errorMsg.append("Book requests: ").append(databaseError.getMessage()).append("; ");
+                        checkComplete(pending, success, errorMsg, listener);
+                    }
+                });
+
+        // Restore hostel infos
+        databaseReference.child("hostelInfos")
+                .orderByChild("studentIdNo")
+                .equalTo(idNo)
+                .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                    @Override
+                    public void onDataChange(com.google.firebase.database.DataSnapshot dataSnapshot) {
+                        List<HostelInfo> infos = new ArrayList<>();
+                        for (com.google.firebase.database.DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            HostelInfo info = snapshot.getValue(HostelInfo.class);
+                            if (info != null) {
+                                info.setFirebaseKey(snapshot.getKey());
+                                infos.add(info);
+                            }
+                        }
+                        sharedPrefManager.clearOfflineHostelInfos();
+                        for (HostelInfo info : infos) {
+                            sharedPrefManager.saveHostelInfo(info);
+                        }
+                        checkComplete(pending, success, errorMsg, listener);
+                    }
+
+                    @Override
+                    public void onCancelled(com.google.firebase.database.DatabaseError databaseError) {
+                        success[0] = false;
+                        errorMsg.append("Hostel infos: ").append(databaseError.getMessage()).append("; ");
+                        checkComplete(pending, success, errorMsg, listener);
+                    }
+                });
+
+        // Restore payments
+        databaseReference.child("payments")
+                .orderByChild("studentIdNo")
+                .equalTo(idNo)
+                .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                    @Override
+                    public void onDataChange(com.google.firebase.database.DataSnapshot dataSnapshot) {
+                        List<Payment> payments = new ArrayList<>();
+                        for (com.google.firebase.database.DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            Payment payment = snapshot.getValue(Payment.class);
+                            if (payment != null) {
+                                payment.setFirebaseKey(snapshot.getKey());
+                                payments.add(payment);
+                            }
+                        }
+                        sharedPrefManager.clearOfflinePayments();
+                        for (Payment payment : payments) {
+                            sharedPrefManager.savePayment(payment);
+                        }
+                        checkComplete(pending, success, errorMsg, listener);
+                    }
+
+                    @Override
+                    public void onCancelled(com.google.firebase.database.DatabaseError databaseError) {
+                        success[0] = false;
+                        errorMsg.append("Payments: ").append(databaseError.getMessage()).append("; ");
+                        checkComplete(pending, success, errorMsg, listener);
+                    }
+                });
+    }
+
+    private void checkComplete(int[] pending, boolean[] success, StringBuilder errorMsg, OnDataRestoredListener listener) {
+        pending[0]--;
+        if (pending[0] <= 0 && listener != null) {
+            listener.onRestored(success[0], errorMsg.toString());
+        }
+    }
+
+    public interface OnDataRestoredListener {
+        void onRestored(boolean success, String message);
     }
 }
