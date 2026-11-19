@@ -91,6 +91,39 @@ public class FirebaseHelper {
                 });
     }
 
+    // Find student by ID number AND registration number in Firebase (for login validation)
+    public void findStudentByIdAndRegNo(String idNo, String regNo, OnStudentFoundListener listener) {
+        if (!isFirebaseReady() || !NetworkUtil.isConnected(context)) {
+            if (listener != null) listener.onNotFound("Offline - cannot query Firebase");
+            return;
+        }
+
+        databaseReference.child("students")
+                .orderByChild("idNo")
+                .equalTo(idNo)
+                .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                    @Override
+                    public void onDataChange(com.google.firebase.database.DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            for (com.google.firebase.database.DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                Student foundStudent = snapshot.getValue(Student.class);
+                                if (foundStudent != null && foundStudent.getRegistrationNumber().equals(regNo)) {
+                                    foundStudent.setFirebaseKey(snapshot.getKey());
+                                    listener.onFound(foundStudent);
+                                    return;
+                                }
+                            }
+                        }
+                        if (listener != null) listener.onNotFound("Student not found in database");
+                    }
+
+                    @Override
+                    public void onCancelled(com.google.firebase.database.DatabaseError databaseError) {
+                        if (listener != null) listener.onNotFound(databaseError.getMessage());
+                    }
+                });
+    }
+
     // Check if student ID already exists in Firebase (for uniqueness validation)
     public void checkStudentIdExists(String idNo, OnIdCheckListener listener) {
         if (!isFirebaseReady() || !NetworkUtil.isConnected(context)) {

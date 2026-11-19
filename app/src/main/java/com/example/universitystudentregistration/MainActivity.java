@@ -199,20 +199,22 @@ public class MainActivity extends AppCompatActivity {
 
         if (isLoginMode) {
             tvHeading.setText("Student Login");
-            tvSubtitle.setText("Enter your ID and Registration Number to login.");
-            tvToggleMode.setText("Don't have an account? Register");
+            tvSubtitle.setText("Enter your ID Number and Registration Number to login.");
             btnAction.setText("Login");
+            tvToggleMode.setText("Don't have an account? Register");
             
-            // Hide registration-only fields
+            // Hide registration-only fields but KEEP registration number visible for login
             etFullNames.setVisibility(View.GONE);
-            etRegistrationNumber.setVisibility(View.GONE);
             rgGender.setVisibility(View.GONE);
             spDepartment.setVisibility(View.GONE);
             spCourse.setVisibility(View.GONE);
             
+            // Keep registration number visible for login validation
+            etRegistrationNumber.setVisibility(View.VISIBLE);
+            
             // Update hints
             findViewById(R.id.tvFullNamesLabel).setVisibility(View.GONE);
-            findViewById(R.id.tvRegNumberLabel).setVisibility(View.GONE);
+            findViewById(R.id.tvRegNumberLabel).setVisibility(View.VISIBLE);
             findViewById(R.id.tvGenderLabel).setVisibility(View.GONE);
             findViewById(R.id.tvDepartmentLabel).setVisibility(View.GONE);
             findViewById(R.id.tvCourseLabel).setVisibility(View.GONE);
@@ -250,8 +252,10 @@ public class MainActivity extends AppCompatActivity {
     // Validate student login details
     private void validateLogin() {
         EditText etIdNo = findViewById(R.id.etIdNo);
+        EditText etRegNo = findViewById(R.id.etRegistrationNumber);
 
         String idNo = etIdNo.getText().toString().trim();
+        String regNo = etRegNo.getText().toString().trim();
 
         // Validate ID Number: 8 or 9 digits
         if (!idNo.matches("\\d{8,9}")) {
@@ -260,9 +264,22 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Check if student exists locally first
+        // Validate Registration Number
+        if (regNo.isEmpty()) {
+            etRegNo.setError("Please enter your registration number");
+            etRegNo.requestFocus();
+            return;
+        }
+
+        if (!regNo.matches("[A-Za-z]\\d{3}-\\d{2}-\\d{4}/\\d{4}")) {
+            etRegNo.setError("Use format: C026-01-0777/2024");
+            etRegNo.requestFocus();
+            return;
+        }
+
+        // Check if student exists locally first (match both ID and registration number)
         Student student = sharedPrefManager.getStudent();
-        if (student != null && student.getIdNo().equals(idNo)) {
+        if (student != null && student.getIdNo().equals(idNo) && student.getRegistrationNumber().equals(regNo)) {
             // Login successful - local data found
             Toast.makeText(this, "Login successful! Welcome back, " + student.getFullNames().split("\\s+")[0], Toast.LENGTH_LONG).show();
             Intent intent = new Intent(this, DashboardActivity.class);
@@ -274,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
         // Not found locally - try Firebase (handles reinstall case)
         if (NetworkUtil.isConnected(this)) {
             Toast.makeText(this, "Looking up your registration in database...", Toast.LENGTH_SHORT).show();
-            firebaseHelper.findStudentById(idNo, new FirebaseHelper.OnStudentFoundListener() {
+            firebaseHelper.findStudentByIdAndRegNo(idNo, regNo, new FirebaseHelper.OnStudentFoundListener() {
                 @Override
                 public void onFound(Student foundStudent) {
                     runOnUiThread(() -> {
@@ -303,14 +320,14 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onNotFound(String message) {
                     runOnUiThread(() -> {
-                        etIdNo.setError("No registration found with this ID. Please register first.");
+                        etIdNo.setError("No registration found with these details. Please register first.");
                         etIdNo.requestFocus();
                         Toast.makeText(MainActivity.this, "Student not found. Please register first.", Toast.LENGTH_LONG).show();
                     });
                 }
             });
         } else {
-            etIdNo.setError("No registration found with this ID. Please register first.");
+            etIdNo.setError("No registration found locally. Connect to internet to sync.");
             etIdNo.requestFocus();
             Toast.makeText(this, "Offline mode - student data not found locally. Connect to internet to sync.", Toast.LENGTH_LONG).show();
         }
